@@ -6,3 +6,9 @@
 //
 
 import Foundation
+
+final class RMRequest {
+    private struct Constants {
+        static let baseURL = "https://rickandmortyapi.com/api"
+    }
+}
