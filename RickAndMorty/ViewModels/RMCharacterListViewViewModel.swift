@@ -22,20 +22,7 @@ final class RMCharacterListViewViewModel: NSObject {
     
     private var isLoadingMoreCharacters = false
     
-    private var characters: [RMCharacter] = [] {
-        didSet {
-            for character in characters {
-                let viewModel = RMCharacterCollectionViewCellModel(
-                    characterName: character.name,
-                    characterStatus: character.status,
-                    characterImageUrl: URL(string: character.image)
-                )
-                if !cellViewModels.contains(viewModel) {
-                    cellViewModels.append(viewModel)
-                }
-            }
-        }
-    }
+    private var characters: [RMCharacter] = []
     
     private var cellViewModels: [RMCharacterCollectionViewCellModel] = []
     
@@ -62,6 +49,8 @@ final class RMCharacterListViewViewModel: NSObject {
                     )
                     self?.cellViewModels.append(viewModel)
                 }
+                
+                print("✅ Initial load: \(results.count) characters, \(self?.cellViewModels.count ?? 0) view models")
                 
                 DispatchQueue.main.async {
                     self?.delegate?.didLoadInitialCharacters()
@@ -108,10 +97,15 @@ final class RMCharacterListViewViewModel: NSObject {
                     let viewModel = RMCharacterCollectionViewCellModel(
                         characterName: character.name,
                         characterStatus: character.status,
-                                            characterImageUrl: URL(string: character.image)
+                        characterImageUrl: URL(string: character.image)
                     )
                     strongSelf.cellViewModels.append(viewModel)
                 }
+                
+                print("✅ Additional load: \(newCount) new characters")
+                print("   Total characters: \(strongSelf.characters.count)")
+                print("   Total view models: \(strongSelf.cellViewModels.count)")
+                
                 DispatchQueue.main.async {
                     strongSelf.delegate?.didLoadMoreCharacters(
                         with: indexPathToAdd
@@ -171,7 +165,20 @@ extension RMCharacterListViewViewModel: UICollectionViewDataSource, UICollection
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
+        
+        // Debug информация
+        print("Selected index: \(indexPath.row)")
+        print("Characters count: \(characters.count)")
+        print("CellViewModels count: \(cellViewModels.count)")
+        
+        // Защита от выхода за границы массива
+        guard indexPath.row < characters.count else {
+            print("❌ Error: Index \(indexPath.row) is out of range for characters array with count \(characters.count)")
+            return
+        }
+        
         let character = characters[indexPath.row]
+        print("✅ Selected character: \(character.name)")
         delegate?.didSelectCharacter(character)
     }
     
